@@ -9,17 +9,17 @@ pipeline {
         }
         stage('build') { 
             steps {
-                sh "cd hello/ && javac --release 21 bvs.java"
+                sh "cd hello/ && javac --release 21 devops.java"
             }
         }
         stage('run') { 
             steps {
-                sh "cd hello/ && java bvs"
+                sh "cd hello/ && java devops"
             }
         }
         stage('Affichage') { 
             steps {
-                sh "echo 'Hello BVS'"
+                sh "echo 'Hello devops'"
             }
         }
     }
