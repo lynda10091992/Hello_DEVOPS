@@ -1,30 +1,49 @@
-Présentation
-Hello DevOps est un projet Java utilisé dans le cadre d'un TP DevOps.
+# Hello DevOps
 
-L'objectif du projet est de mettre en place une chaîne d'Intégration Continue (CI) permettant d'automatiser les étapes de compilation, d'exécution et d'analyse du code source.
+## Présentation
 
-Technologies utilisées
-Java
-Git
+**Hello DevOps** est un projet Java utilisé dans le cadre d'un TP DevOps.
+
+L'objectif est de mettre en place une chaîne d'**Intégration Continue (CI)** qui automatise :
+
+- la compilation du code,
+- son exécution,
+- les tests,
+- l'analyse de la qualité du code.
+
+## Technologies utilisées
+
+- Java 21
+- Git / GitHub
+- Jenkins
+- SonarQube
+- JUnit
+
+## Fichiers du projet
+
+- `devops.java` : le programme Java (affiche un message de bienvenue)
+- `Jenkinsfile` : les étapes exécutées par Jenkins
+- `sonar-project.properties` : les réglages de l'analyse SonarQube
+
+## Fonctionnement
+
+Le programme affiche un message de bienvenue. À chaque build, Jenkins récupère le projet sur GitHub, le compile avec `javac`, le lance, puis envoie le code à SonarQube pour l'analyser.
+
+Les tests sont écrits avec JUnit et lancés directement avec Java, sans Maven.
+
+## Pipeline CI
+
+```
 GitHub
-Jenkins
-SonarQube
-Fonctionnement
-L'application exécute actuellement un programme Java simple affichant un message de bienvenue.
-
-Le projet sera progressivement amélioré et intégré dans une chaîne CI permettant :
-
-le versionnement du code avec GitHub ;
-l'automatisation des traitements avec Jenkins ;
-l'analyse de la qualité du code avec SonarQube ;
-l'ajout futur de Maven et JUnit pour la compilation et les tests.
-Pipeline CI
-GitHub
    ↓
 Jenkins
    ↓
-Compilation
+Compilation (javac)
    ↓
-Tests
+Exécution
+   ↓
+Tests (JUnit)
    ↓
 Analyse SonarQube
+   ↓
+Quality Gate
