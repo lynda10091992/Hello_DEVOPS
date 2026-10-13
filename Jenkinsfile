@@ -4,7 +4,7 @@ pipeline {
         stage('clone') { 
             steps {
                 sh "rm -rf *"
-                sh "git clone https://github.com/bigvaluesys/hello.git"
+                sh "git clone https://github.com/lynda10091992/Hello_DEVOPS.git"
             }
         }
         stage('build') { 
@@ -14,7 +14,7 @@ pipeline {
         }
         stage('run') { 
             steps {
-                sh "cd hello/ && java devops"
+                sh "cd Hello_DEVOPS/ && java devops"
             }
         }
         stage('Affichage') { 
