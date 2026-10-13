@@ -40,7 +40,7 @@ agent any   // Jenkins peut utiliser n'importe quelle machine disponible
                         // java.binaries = où se trouvent les fichiers Java compilés
                         // exclusions = fichiers ignorés (les .class)
                         sh """
-                            cd Hello_DEVOPS/ && ${scannerHome}/bin/sonar-scanner \
+                            cd Hello_DEVOPS/ && ${scannerHome}/bin/sonarscanner \
                               -Dsonar.projectKey=hello-devops \
                               -Dsonar.projectName=hello-devops \
                               -Dsonar.sources=. \
