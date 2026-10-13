@@ -47,3 +47,4 @@ Tests (JUnit)
 Analyse SonarQube
    ↓
 Quality Gate
+```
