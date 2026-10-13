@@ -46,12 +46,8 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         // Lance le scanner dans le dossier du projet, avec les réglages -D
                         sh """
-                            cd Hello_DEVOPS/ && ${scannerHome}/bin/sonar-scanner \
-                              -Dsonar.projectKey=hello-devops \
-                              -Dsonar.projectName=hello-devops \
-                              -Dsonar.sources=. \
-                              -Dsonar.java.binaries=. \
-                              -Dsonar.exclusions=**/*.class
+                            cd Hello_DEVOPS/
+                            ${scannerHome}/bin/sonar-scanner
                         """
                     }
                 }
