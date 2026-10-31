@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-    // Affiche le message à l'adresse /
+    // Renvoie le message pour l'adresse /
     @GetMapping("/")
     public String accueil() {
-        return devops.message();
+        return Devops.MESSAGE;
     }
 }
