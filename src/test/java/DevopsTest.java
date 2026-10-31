@@ -1,16 +1,20 @@
+// Classe de l'application, située dans le package devops
+import devops.devops;
+
+// Outils JUnit pour déclarer les tests et vérifier les résultats
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DevopsTest {
 
-    // Test 1 : le message est exactement celui attendu
+    // Vérifie que le message correspond exactement au résultat attendu
     @Test
     void messageEstCorrect() {
         assertEquals("Hello World! lynda from group DevOps", devops.message());
     }
 
-    // Test 2 : le message n'est pas vide
+    // Vérifie que le message n'est pas vide
     @Test
     void messageNEstPasVide() {
         assertTrue(devops.message().length() > 0);
