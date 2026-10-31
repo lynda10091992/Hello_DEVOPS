@@ -1,0 +1,81 @@
+<!-- Déclaration du projet Maven et du format XML utilisé -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Version du format POM, et non de Maven -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Identifiant du groupe ou de l'organisation -->
+    <groupId>fr.devops</groupId>
+
+    <!-- Nom de l'artefact produit par Maven -->
+    <artifactId>Hello_DEVOPS</artifactId>
+
+    <!-- Version du projet ; SNAPSHOT signifie en développement -->
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- Paramètres utilisés pour construire le projet -->
+    <properties>
+
+        <!-- Compiler le code pour Java 21 -->
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <!-- Encodage des fichiers sources -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    </properties>
+
+    <!-- Bibliothèques nécessaires au projet -->
+    <dependencies>
+        <dependency>
+
+            <!-- Groupe qui fournit JUnit Jupiter -->
+            <groupId>org.junit.jupiter</groupId>
+
+            <!-- Bibliothèque pour écrire et exécuter les tests JUnit 5 -->
+            <artifactId>junit-jupiter</artifactId>
+
+            <!-- Version de JUnit -->
+            <version>5.10.2</version>
+
+            <!-- Bibliothèque utilisée uniquement pour les tests -->
+            <scope>test</scope>
+
+        </dependency>
+    </dependencies>
+
+    <!-- Configuration de la construction du projet -->
+    <build>
+
+        <!-- Plugins utilisés pendant la construction -->
+        <plugins>
+            <plugin>
+
+                <!-- Groupe des plugins officiels Maven -->
+                <groupId>org.apache.maven.plugins</groupId>
+
+                <!-- Plugin chargé de compiler le code Java -->
+                <artifactId>maven-compiler-plugin</artifactId>
+
+                <!-- Version du plugin de compilation -->
+                <version>3.13.0</version>
+
+            </plugin>
+
+            <plugin>
+
+                <!-- Groupe des plugins officiels Maven -->
+                <groupId>org.apache.maven.plugins</groupId>
+
+                <!-- Plugin chargé d'exécuter les tests unitaires -->
+                <artifactId>maven-surefire-plugin</artifactId>
+
+                <!-- Version du plugin de tests -->
+                <version>3.2.5</version>
+
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

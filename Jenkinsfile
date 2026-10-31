@@ -13,26 +13,22 @@ pipeline {
 
         stage('build') {
             steps {
-                // Compile devops.java
-                sh "cd Hello_DEVOPS/ && javac --release 21 devops.java"
+                // Compile le code placé dans src/main/java
+                sh "cd Hello_DEVOPS/ && mvn compile"
             }
         }
 
         stage('Tests') {
             steps {
-                // Télécharge JUnit (version 1.10.2, un seul fichier .jar)
-                sh "curl -sSL -o junit.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar"
-                // Compile le programme et le test
-                sh "cd Hello_DEVOPS/ && javac --release 21 -cp ../junit.jar devops.java DevopsTest.java"
-                // Lance les tests : si un test échoue, la chaîne s'arrête
-                sh "cd Hello_DEVOPS/ && java -jar ../junit.jar execute --class-path . --scan-class-path"
+                // Maven compile et exécute les tests JUnit
+               // Si un test échoue, cette étape échoue et le pipeline s'arrête
+               sh "cd Hello_DEVOPS/ && mvn test"
             }
         }
-
-        stage('run') {
+        stage('packaging') {
             steps {
-                // Lance le programme Java
-                sh "cd Hello_DEVOPS/ && java devops"
+              // Crée le JAR dans target/ après compilation et tests
+              sh "cd Hello_DEVOPS/ && mvn package"
             }
         }
 
