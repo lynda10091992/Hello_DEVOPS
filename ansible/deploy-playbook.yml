@@ -1,0 +1,36 @@
+---
+- name: Déployer Hello_DEVOPS
+  # Cible les groupes [backend].
+  hosts: "backend"
+
+  # Les tâches n'ont pas besoin des informations système du serveur.
+  gather_facts: false
+
+  tasks:
+    # Étape 1 — Préparer le dossier sur dev-backend.
+    - name: Créer le dossier de déploiement
+      ansible.builtin.file:
+        path: /home/adm1/hello-devops
+        state: directory
+        mode: "0755"
+
+    # Étape 2 — Copier la configuration Compose depuis Devmaster.
+    - name: Copier le fichier Compose
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../compose.yaml"
+        dest: /home/adm1/hello-devops/compose.yaml
+        mode: "0644"
+
+    # Étape 3 — Démarrer ou mettre à jour le conteneur sur dev-backend.
+    - name: Lancer Hello_DEVOPS avec Docker Compose
+      # Utilise les droits sudo pour cette tâche uniquement.
+      become: true
+      ansible.builtin.command:
+        # -d laisse le conteneur tourner en arrière-plan.
+        cmd: docker compose up -d
+        # Compose cherche compose.yaml dans ce dossier.
+        chdir: /home/adm1/hello-devops
+     # Transmet le tag de l'image à Docker Compose sur dev-backend.
+      environment:
+     # Utilise le tag fourni à Ansible, ou build-13 par défaut.
+        IMAGE_TAG: "{{ image_tag | default('build-13') }}"

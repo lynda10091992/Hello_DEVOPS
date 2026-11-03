@@ -1,0 +1,5 @@
+services:
+  hello-devops:
+    image: "zegrour/hello-devops:${IMAGE_TAG:-build-13}"
+    ports:
+      - "8082:8080"

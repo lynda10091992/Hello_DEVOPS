@@ -98,6 +98,29 @@ pipeline {
                 }
             }
         }
+        stage('Déploiement backend') {
+            steps {
+                // Charge la clé SSH du backend pour Ansible
+                sshagent(credentials: ['backend-ssh-key']) {
+                    // Fournit à Ansible le mot de passe sudo sans saisie manuelle
+                    withCredentials([string(
+                        credentialsId: 'backend-sudo-password',
+                        variable: 'ANSIBLE_BECOME_PASS'
+                    )]) {
+                        dir('Hello_DEVOPS') {
+                            // Déploie le tag publié par ce même build
+                            sh '''
+                                ansible-playbook \
+                                  -i ansible/inventory.ini \
+                                  ansible/deploy-playbook.yml \
+                                  --limit backend \
+                                  -e "image_tag=build-$BUILD_NUMBER"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
         // ---- FIN AJOUT ----
 
         stage('Affichage') {
