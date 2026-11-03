@@ -59,6 +59,17 @@ pipeline {
                 }
             }
         }
+        // Construit l'image uniquement après validation du Quality Gate
+        stage('Docker Build') {
+            steps {
+                // Entre dans le dossier du dépôt cloné par le pipeline
+                dir('Hello_DEVOPS') {
+                    // Le point indique que Docker utilise ce dossier pour trouver le Dockerfile et le JAR dans target/
+                    // Le tag ci identifie l'image construite par Jenkins
+                    sh 'docker build -t hello-devops:ci .'
+                }
+            }
+        }
         // ---- FIN AJOUT ----
 
         stage('Affichage') {
