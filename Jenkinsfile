@@ -70,6 +70,34 @@ pipeline {
                 }
             }
         }
+        stage('Docker Push') {
+            steps {
+                // Récupère le compte et le token stockés dans Jenkins
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_TOKEN'
+                )]) {
+                    sh '''
+                        set +x
+                        set -eu
+
+                        # Utilise une configuration Docker temporaire
+                        export DOCKER_CONFIG="$(mktemp -d)"
+                        trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+                        # Se connecte sans afficher le token
+                        printf '%s' "$DOCKERHUB_TOKEN" | docker login \
+                            --username "$DOCKERHUB_USER" --password-stdin
+
+                        # Publie l'image avec un tag propre à ce build Jenkins
+                        IMAGE="$DOCKERHUB_USER/hello-devops:build-$BUILD_NUMBER"
+                        docker tag hello-devops:ci "$IMAGE"
+                        docker push "$IMAGE"
+                    '''
+                }
+            }
+        }
         // ---- FIN AJOUT ----
 
         stage('Affichage') {
