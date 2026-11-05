@@ -10,6 +10,6 @@ public class HelloController {
     // Renvoie le message pour l'adresse /
     @GetMapping("/")
     public String accueil() {
-        return Devops.MESSAGE;
+        return "<h1>" + Devops.MESSAGE + "</h1><p><a href=\"/participants.html\">Rechercher un participant</a></p>";
     }
 }
