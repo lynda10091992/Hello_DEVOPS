@@ -1,49 +1,43 @@
 ---
 - name: Déployer Hello_DEVOPS
-  # Cible les groupes [backend].
-  hosts: "backend"
-
-  # Les tâches n'ont pas besoin des informations système du serveur.
+  hosts: backend
   gather_facts: false
 
   tasks:
-    # Étape 1 — Préparer le dossier sur dev-backend.
+    # Vérifier le secret avant toute modification du backend.
+    - name: Vérifier le mot de passe fourni par Jenkins
+      ansible.builtin.assert:
+        that:
+          - lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') | length > 0
+        fail_msg: "Le secret PostgreSQL manque dans Jenkins."
+      no_log: true
+
     - name: Créer le dossier de déploiement
       ansible.builtin.file:
         path: /home/adm1/hello-devops
         state: directory
         mode: "0755"
 
-    # Étape 2 — Copier la configuration Compose depuis Devmaster.
     - name: Copier le fichier Compose
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../compose.yaml"
         dest: /home/adm1/hello-devops/compose.yaml
         mode: "0644"
 
-    # Étape 3 — Démarrer ou mettre à jour le conteneur sur dev-backend.
-    - name: Lancer Hello_DEVOPS avec Docker Compose
-      # Utilise les droits sudo pour cette tâche uniquement.
+    # Créer le fichier attendu par Compose avant de démarrer le conteneur.
+    - name: Installer le mot de passe PostgreSQL
       become: true
-      ansible.builtin.command:
-        # -d laisse le conteneur tourner en arrière-plan.
-        cmd: docker compose up -d
-        # Compose cherche compose.yaml dans ce dossier.
-        chdir: /home/adm1/hello-devops
-     # Transmet le tag de l'image à Docker Compose sur dev-backend.
-      environment:
-     # Utilise le tag fourni à Ansible, ou build-13 par défaut.
-        IMAGE_TAG: "{{ image_tag | default('build-13') }}"
-     # Récupère le secret fourni par Jenkins et l'enregistre sur le backend.
-    - name: Vérifier la présence du mot de passe PostgreSQL
-      ansible.builtin.assert:
-        that:
-          - lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') | length > 0
-      no_log: true
-
-    - name: Créer le fichier du mot de passe PostgreSQL
       ansible.builtin.copy:
         content: "{{ lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') }}"
         dest: /home/adm1/hello-devops/postgres-password.txt
+        owner: adm1
         mode: "0600"
       no_log: true
+
+    - name: Lancer Hello_DEVOPS avec Docker Compose
+      become: true
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /home/adm1/hello-devops
+      environment:
+        IMAGE_TAG: "{{ image_tag | default('build-13') }}"
