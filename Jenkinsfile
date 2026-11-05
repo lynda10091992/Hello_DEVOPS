@@ -106,7 +106,12 @@ pipeline {
                     withCredentials([string(
                         credentialsId: 'backend-sudo-password',
                         variable: 'ANSIBLE_BECOME_PASS'
-                    )]) {
+                    ),
+                    string(
+                        credentialsId: 'postgres-app-password',
+                        variable: 'POSTGRES_APP_PASSWORD'
+                   ) 
+                   ]) {
                         dir('Hello_DEVOPS') {
                             // Déploie le tag publié par ce même build
                             sh '''

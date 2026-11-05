@@ -34,3 +34,16 @@
       environment:
      # Utilise le tag fourni à Ansible, ou build-13 par défaut.
         IMAGE_TAG: "{{ image_tag | default('build-13') }}"
+     # Récupère le secret fourni par Jenkins et l'enregistre sur le backend.
+    - name: Vérifier la présence du mot de passe PostgreSQL
+      ansible.builtin.assert:
+        that:
+          - lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') | length > 0
+      no_log: true
+
+    - name: Créer le fichier du mot de passe PostgreSQL
+      ansible.builtin.copy:
+        content: "{{ lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') }}"
+        dest: /home/adm1/hello-devops/postgres-password.txt
+        mode: "0600"
+      no_log: true

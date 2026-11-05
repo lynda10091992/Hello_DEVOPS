@@ -41,10 +41,28 @@
     <!-- Bibliothèques nécessaires au projet -->
     <dependencies>
         <dependency>
-            <!-- Fonctions web Spring Boot avec Tomcat embarqué -->
+            <!-- Outils pour créer une API REST et renvoyer du JSON. Inclut Tomcat embarqué. -->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Ajoute les outils Spring pour recevoir des requêtes SOAP et renvoyer des réponses SOAP -->
+	<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web-services</artifactId>
+        </dependency>
+        <!-- Ajoute les outils Spring JDBC pour envoyer des requêtes SQL depuis Java -->
+        <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- Pilote JDBC qui permet à Java de communiquer avec PostgreSQL -->
+        <dependency>
+             <groupId>org.postgresql</groupId>
+             <artifactId>postgresql</artifactId>
+             <!-- Le pilote est nécessaire à l'exécution de l'application -->
+             <scope>runtime</scope>
+        </dependency> 
         <dependency>
             <!-- Groupe qui fournit JUnit Jupiter -->
             <groupId>org.junit.jupiter</groupId>
@@ -58,6 +76,11 @@
             <!-- Bibliothèque utilisée uniquement pour les tests -->
             <scope>test</scope>
 
+        </dependency>
+        <!-- Permet de générer le WSDL à partir du schéma XSD. -->
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
         </dependency>
     </dependencies>
 

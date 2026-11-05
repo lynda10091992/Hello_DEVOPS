@@ -1,0 +1,8 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:dev="urn:hello-devops:participants">
+    <soap:Body>
+        <dev:chercherParticipantRequest>
+            <dev:id>9999</dev:id>
+        </dev:chercherParticipantRequest>
+    </soap:Body>
+</soap:Envelope>

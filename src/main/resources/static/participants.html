@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Participants DevOps</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 760px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f3f6fb;
+            color: #17263c;
+        }
+        section {
+            background: white;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+        input, button { padding: 12px; font-size: 16px; }
+        button {
+            background: #215bd7;
+            color: white;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+        label { display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Participants à la formation DevOps</h1>
+
+    <section>
+        <form id="recherche">
+            <label for="identifiant">Numéro du participant</label>
+            <input id="identifiant" type="number" min="1"
+                   step="1" value="2" required>
+            <button type="submit">Rechercher</button>
+        </form>
+        <p id="fiche" role="status" aria-live="polite"></p>
+    </section>
+
+    <section>
+        <h2>La demande envoyée à ton API</h2>
+        <pre id="demande">Clique sur Rechercher.</pre>
+
+        <h2>La réponse de ton API</h2>
+        <pre id="reponse">La réponse JSON apparaîtra ici.</pre>
+    </section>
+
+    <script>
+        const formulaire = document.getElementById("recherche");
+        const fiche = document.getElementById("fiche");
+        const demande = document.getElementById("demande");
+        const reponse = document.getElementById("reponse");
+
+        formulaire.addEventListener("submit", async (evenement) => {
+            evenement.preventDefault();
+
+            const id = document.getElementById("identifiant").value;
+            const chemin = "/participants/" + encodeURIComponent(id);
+
+            demande.textContent = "GET " + chemin;
+            fiche.textContent = "Recherche en cours…";
+            reponse.textContent = "";
+
+            try {
+                // Appeler l'API du même serveur que cette page.
+                const resultat = await fetch(chemin);
+                const contenu = await resultat.text();
+
+                reponse.textContent = "HTTP " + resultat.status + "\n";
+
+                if (resultat.status === 404) {
+                    fiche.textContent = "Participant introuvable.";
+                    return;
+                }
+
+                if (!resultat.ok) {
+                    reponse.textContent += contenu;
+                    fiche.textContent = "Le serveur a rencontré une erreur.";
+                    return;
+                }
+
+                const participant = JSON.parse(contenu);
+                reponse.textContent += JSON.stringify(participant, null, 2);
+                fiche.textContent =
+                    participant.prenom + ", " + participant.age +
+                    " ans — " + (participant.ville || "Ville non renseignée");
+            } catch (erreur) {
+                fiche.textContent = "Impossible de récupérer la fiche.";
+                reponse.textContent = erreur.message;
+            }
+        });
+    </script>
+</body>
+</html>
