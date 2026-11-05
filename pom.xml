@@ -62,21 +62,14 @@
              <artifactId>postgresql</artifactId>
              <!-- Le pilote est nécessaire à l'exécution de l'application -->
              <scope>runtime</scope>
-        </dependency> 
-        <dependency>
-            <!-- Groupe qui fournit JUnit Jupiter -->
-            <groupId>org.junit.jupiter</groupId>
-
-            <!-- Bibliothèque pour écrire et exécuter les tests JUnit 5 -->
-            <artifactId>junit-jupiter</artifactId>
-
-            <!-- Version de JUnit -->
-            <version>5.10.2</version>
-
-            <!-- Bibliothèque utilisée uniquement pour les tests -->
-            <scope>test</scope>
-
         </dependency>
+        <!-- Outils de test : JUnit pour vérifier les résultats,
+         Mockito pour simuler les réponses du Repository. --> 
+        <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-test</artifactId>
+             <scope>test</scope>
+        </dependency>   
         <!-- Permet de générer le WSDL à partir du schéma XSD. -->
         <dependency>
             <groupId>wsdl4j</groupId>
@@ -119,7 +112,28 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Mesure le code exécuté par les tests et produit un rapport. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.16</version>
+                <executions>
+                    <execution>
+                        <id>mesurer-les-tests</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>creer-le-rapport</id>
+                        <phase>test</phase>
+                        <goals>
+
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
 </project>
