@@ -20,10 +20,28 @@ pipeline {
 
         stage('Tests') {
             steps {
-                // Maven compile et exécute les tests JUnit
-               // Si un test échoue, cette étape échoue et le pipeline s'arrête
-               sh "cd Hello_DEVOPS/ && mvn test"
+                dir('Hello_DEVOPS') {
+                    // Exécute les tests et génère le rapport grâce au plugin JaCoCo.
+                    sh 'mvn clean test'
+
+                    // Arrête immédiatement le build si le rapport manque.
+                    sh 'test -s target/site/jacoco/jacoco.xml'
+
+                }
             }
+            post {
+                always {
+                    // Affiche les résultats des tests dans Jenkins.
+                    junit 'Hello_DEVOPS/target/surefire-reports/TEST-*.xml'
+                    
+                    // Conserve les rapports comme artefacts du build.
+                    archiveArtifacts(
+                        artifacts: 'Hello_DEVOPS/target/site/jacoco/**',
+                        allowEmptyArchive: true
+                    )
+                }
+            }   
+
         }
         stage('packaging') {
             steps {
