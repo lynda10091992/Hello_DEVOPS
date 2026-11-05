@@ -63,7 +63,7 @@ pipeline {
             }
             post {
                 failure {
-                    withSonarQubeEnv('SonarQube', envOnly: true) {
+                    withSonarQubeEnv(installationName: 'SonarQube', envOnly: true) {
                         sh '''
                             set +x
                             echo "Détail des conditions du Quality Gate :"
