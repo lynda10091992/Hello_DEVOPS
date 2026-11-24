@@ -11,12 +11,15 @@ services:
       SERVER_ADDRESS: "0.0.0.0"
 
       # Connexion à PostgreSQL sur Devmaster.
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://192.168.84.10:5432/formation_devops"
-      SPRING_DATASOURCE_USERNAME: "hello_devops_app"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/formation_devops"
+      SPRING_DATASOURCE_USERNAME: "appuser"
       SPRING_SQL_INIT_MODE: "never"
 
       # Chargement du mot de passe depuis le fichier secret.
       SPRING_CONFIG_IMPORT: "configtree:/run/secrets/"
+
+    networks:
+      - backend-network
 
     secrets:
       - source: postgres_password
@@ -25,3 +28,8 @@ services:
 secrets:
   postgres_password:
     file: ./postgres-password.txt
+
+networks:
+  backend-network:
+    external: true
+    name: backend-compose_default

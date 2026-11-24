@@ -1,43 +1,215 @@
 ---
-- name: Déployer Hello_DEVOPS
+- name: Migrer PostgreSQL et deployer Hello_DEVOPS
   hosts: backend
   gather_facts: false
 
+  vars:
+    deployment_dir: /home/adm1/hello-devops
+    database_name: formation_devops
+    temporary_database: formation_devops_migration_tmp
+    database_user: appuser
+    postgres_container: backend-compose-postgres-1
+
   tasks:
-    # Vérifier le secret avant toute modification du backend.
-    - name: Vérifier le mot de passe fourni par Jenkins
+    - name: Verifier le secret Jenkins
       ansible.builtin.assert:
         that:
-          - lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') | length > 0
-        fail_msg: "Le secret PostgreSQL manque dans Jenkins."
+          - lookup('env', 'POSTGRES_APP_PASSWORD') | length > 0
+        fail_msg: "Secret PostgreSQL manquant."
       no_log: true
 
-    - name: Créer le dossier de déploiement
-      ansible.builtin.file:
-        path: /home/adm1/hello-devops
-        state: directory
-        mode: "0755"
+    - name: Verifier la sauvegarde sur Jenkins
+      ansible.builtin.stat:
+        path: /var/lib/jenkins/formation_devops.dump
+      delegate_to: localhost
+      become: false
+      register: sauvegarde
 
-    - name: Copier le fichier Compose
+    - name: Confirmer la sauvegarde
+      ansible.builtin.assert:
+        that:
+          - sauvegarde.stat.exists
+          - sauvegarde.stat.size > 0
+
+    - name: Creer le dossier de deploiement
+      ansible.builtin.file:
+        path: "{{ deployment_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Copier Docker Compose
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../compose.yaml"
-        dest: /home/adm1/hello-devops/compose.yaml
+        dest: "{{ deployment_dir }}/compose.yaml"
         mode: "0644"
 
-    # Créer le fichier attendu par Compose avant de démarrer le conteneur.
-    - name: Installer le mot de passe PostgreSQL
-      become: true
+    - name: Installer le secret PostgreSQL
       ansible.builtin.copy:
-        content: "{{ lookup('ansible.builtin.env', 'POSTGRES_APP_PASSWORD') }}"
-        dest: /home/adm1/hello-devops/postgres-password.txt
+        content: "{{ lookup('env', 'POSTGRES_APP_PASSWORD') }}"
+        dest: "{{ deployment_dir }}/postgres-password.txt"
         owner: adm1
         mode: "0600"
       no_log: true
 
-    - name: Lancer Hello_DEVOPS avec Docker Compose
+    - name: Verifier si formation_devops existe
+      become: true
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ postgres_container }}"
+          - psql
+          - -U
+          - "{{ database_user }}"
+          - -d
+          - postgres
+          - -tAc
+          - "SELECT 1 FROM pg_database WHERE datname = '{{ database_name }}'"
+      register: database_check
+      changed_when: false
+
+    - name: Migrer la base uniquement si absente
+      when: database_check.stdout | trim != "1"
+      block:
+        - name: Verifier l'absence de la base temporaire
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - exec
+              - "{{ postgres_container }}"
+              - psql
+              - -U
+              - "{{ database_user }}"
+              - -d
+              - postgres
+              - -tAc
+              - "SELECT 1 FROM pg_database WHERE datname = '{{ temporary_database }}'"
+          register: temp_check
+          changed_when: false
+
+        - name: Bloquer si une ancienne migration existe
+          ansible.builtin.assert:
+            that:
+              - temp_check.stdout | trim != "1"
+            fail_msg: "Base temporaire existante. Verification manuelle necessaire."
+
+        - name: Transferer la sauvegarde sur Backend
+          ansible.builtin.copy:
+            src: /var/lib/jenkins/formation_devops.dump
+            dest: "{{ deployment_dir }}/formation_devops.dump"
+            mode: "0600"
+
+        - name: Copier la sauvegarde dans PostgreSQL
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - cp
+              - "{{ deployment_dir }}/formation_devops.dump"
+              - "{{ postgres_container }}:/tmp/formation_devops.dump"
+
+        - name: Creer la base temporaire
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - exec
+              - "{{ postgres_container }}"
+              - createdb
+              - -U
+              - "{{ database_user }}"
+              - -O
+              - "{{ database_user }}"
+              - "{{ temporary_database }}"
+
+        - name: Restaurer les donnees
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - exec
+              - "{{ postgres_container }}"
+              - pg_restore
+              - -U
+              - "{{ database_user }}"
+              - -d
+              - "{{ temporary_database }}"
+              - --no-owner
+              - --no-acl
+              - --exit-on-error
+              - /tmp/formation_devops.dump
+
+        - name: Verifier les participants restaures
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - exec
+              - "{{ postgres_container }}"
+              - psql
+              - -U
+              - "{{ database_user }}"
+              - -d
+              - "{{ temporary_database }}"
+              - -tAc
+              - "SELECT COUNT(*) FROM public.participant"
+          register: restored_count
+          changed_when: false
+
+        - name: Valider les 5 participants
+          ansible.builtin.assert:
+            that:
+              - restored_count.stdout | trim | int == 5
+            fail_msg: "Nombre de participants inattendu."
+
+        - name: Renommer la base temporaire
+          become: true
+          ansible.builtin.command:
+            argv:
+              - docker
+              - exec
+              - "{{ postgres_container }}"
+              - psql
+              - -U
+              - "{{ database_user }}"
+              - -d
+              - postgres
+              - -c
+              - "ALTER DATABASE {{ temporary_database }} RENAME TO {{ database_name }}"
+
+      rescue:
+        - name: Bloquer le deploiement si la migration echoue
+          ansible.builtin.fail:
+            msg: "Migration echouee. Verifier la base temporaire avant toute nouvelle tentative."
+
+    - name: Verifier la base finale
+      become: true
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ postgres_container }}"
+          - psql
+          - -U
+          - "{{ database_user }}"
+          - -d
+          - "{{ database_name }}"
+          - -tAc
+          - "SELECT COUNT(*) FROM public.participant"
+      register: participants
+      changed_when: false
+
+    - name: Confirmer les donnees
+      ansible.builtin.assert:
+        that:
+          - participants.stdout | trim | int >= 5
+        fail_msg: "Verification des donnees echouee."
+
+    - name: Deployer Hello_DEVOPS
       become: true
       ansible.builtin.command:
         cmd: docker compose up -d
-        chdir: /home/adm1/hello-devops
+        chdir: "{{ deployment_dir }}"
       environment:
         IMAGE_TAG: "{{ image_tag | default('build-13') }}"
