@@ -44,6 +44,7 @@
         mode: "0644"
 
     - name: Installer le secret PostgreSQL
+      become: true
       ansible.builtin.copy:
         content: "{{ lookup('env', 'POSTGRES_APP_PASSWORD') }}"
         dest: "{{ deployment_dir }}/postgres-password.txt"
